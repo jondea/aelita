@@ -2,11 +2,27 @@
 
 #[macro_use] extern crate rocket;
 
+use askama::Template;
+
+#[derive(Template)]
+#[template(path = "hello.html")]
+struct HelloTemplate {
+    name: String,
+}
+
+#[get("/<name>")]
+fn hello(name : String) -> HelloTemplate {
+    HelloTemplate { name }
+}
+
 #[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
+fn hello_no_one() -> HelloTemplate {
+    hello(String::from("Mr Mysterious..."))
 }
 
 fn main() {
-    rocket::ignite().mount("/", routes![index]).launch();
+    rocket::ignite()
+        .mount("/", routes![hello])
+        .mount("/", routes![hello_no_one])
+        .launch();
 }
