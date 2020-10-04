@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <div>
+      {% for case in cases %}
+      <div>
+        <h2>Id: {{ case.id }}</h2>
+        <p>Data: {{ case.data }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </body>
+</html>
