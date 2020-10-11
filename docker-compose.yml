@@ -1,12 +1,39 @@
 version: '3.1'
 
 services:
- db:
-  image: postgres
-  restart: always
-  env_file:
-    - ./.env
-  volumes:
-    - ./postgresql/data:/var/lib/postgresql/data
-  ports:
-    - 5432:5432
+  db:
+    image: postgres
+    restart: always
+    env_file:
+      - ./.env
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql/data
+    ports: 
+      - 5432:5432
+
+  api:
+    build: ./api
+    ports: 
+      - "8000:8000"
+    volumes:
+      - ./api:/usr/src/app
+    links:
+      - db
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+    command: bash -c "./wait-for-diesel-setup.sh && cargo watch -x run"
+
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/usr/src/app
+    ports:
+      - "8080:8080"
+    command: npm run serve
+    links:
+      - api
+
+volumes:
+  postgresql: {}
