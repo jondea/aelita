@@ -2,31 +2,10 @@
 
 #[macro_use] extern crate rocket;
 
-pub mod cases;
-use cases::CasesTemplate;
-
 pub mod schema;
 pub mod models;
 
 use uuid::Uuid;
-
-use askama::Template;
-
-#[derive(Template)]
-#[template(path = "hello.html")]
-struct HelloTemplate {
-    name: String,
-}
-
-#[get("/<name>")]
-fn hello(name : String) -> HelloTemplate {
-    HelloTemplate { name }
-}
-
-#[get("/")]
-fn hello_no_one() -> HelloTemplate {
-    hello(String::from("Mr Mysterious..."))
-}
 
 #[macro_use]
 extern crate diesel;
@@ -48,7 +27,7 @@ pub fn establish_connection() -> PgConnection {
 }
 
 #[get("/cases")]
-fn show_cases() -> CasesTemplate {
+fn show_cases() -> String{
 
     use schema::cases::dsl::*;
 
@@ -58,11 +37,15 @@ fn show_cases() -> CasesTemplate {
         .load::<Case>(&connection)
         .expect("Error loading cases");
 
-    return CasesTemplate{cases: results};
+    for result in results {
+        println!("ID: {} \nData: {}", result.id, result.data);
+    }
+
+    return "You are at /cases".to_string();
 }
 
 #[get("/cases/<id_str>")]
-fn get_case(id_str: String) -> Result<Case, String> {
+fn get_case(id_str: String) -> Result<String, String> {
 
     use schema::cases::dsl::*;
 
@@ -73,18 +56,16 @@ fn get_case(id_str: String) -> Result<Case, String> {
 
     let connection = establish_connection();
     let result = match cases.find(get_id).first::<Case>(&connection){
-        Ok(r) => r, 
+        Ok(r) => {println!("ID: {} \nData: {}", r.id, r.data); r}, 
         Err(_e) => return Err(String::from("Couldn't find case")), 
     };
 
-    return Ok(result);
+    return Ok("result".to_string());
 }
 
 fn main() {
 
     rocket::ignite()
-        .mount("/", routes![hello])
-        .mount("/", routes![hello_no_one])
         .mount("/", routes![show_cases])
         .mount("/", routes![get_case])
         .launch();
